@@ -123,6 +123,10 @@ function AS:CheckEmbed(AddOn)
 	end
 end
 
+function ES:IsEmbedSelected(name)
+	return (AS:CheckOption('EmbedSystem') or AS:CheckOption('EmbedSystemDual')) and (strmatch(AS:CheckOption('EmbedMain'), name) or strmatch(AS:CheckOption('EmbedLeft'), name) or strmatch(AS:CheckOption('EmbedRight'), name))
+end
+
 function ES:Check(Message)
 	if not (AS:CheckOption('EmbedSystem') or AS:CheckOption('EmbedSystemDual')) then return end
 
@@ -139,6 +143,7 @@ function ES:Check(Message)
 	if AS:CheckEmbed('Skada') then ES:Skada() end
 	if AS:CheckEmbed('TinyDPS') then ES:TinyDPS() end
 	if AS:CheckEmbed('Recount') then ES:Recount() end
+	if ES:IsEmbedSelected('LootRoll') then ES:LootRoll() end
 
 	if Message and AS:CheckOption('EmbedSystemMessage') then
 		if AS:CheckOption('EmbedMain') then AS:Print(format(L["Embed System: Main: '%s'"], AS:CheckOption('EmbedMain'))) end
