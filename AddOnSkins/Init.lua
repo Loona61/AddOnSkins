@@ -5,13 +5,44 @@ local GetAddOnEnableState, GetAddOnInfo, GetAddOnMetadata, GetNumAddOns, IsAddOn
 local UnitName, GetRealmName, UnitClass, UnitFactionGroup = UnitName, GetRealmName, UnitClass, UnitFactionGroup
 
 local UIParent, CreateFrame = UIParent, CreateFrame
-local LibStub = _G.LibStub
-
 local AddOnName, Engine = ...
+_G.AddOnSkins = Engine
+
+local LibStub = _G.LibStub
+if not LibStub or not LibStub('AceAddon-3.0', true) then
+	local noop = function() end
+	local stubSkins = setmetatable({}, { __index = function() return noop end })
+	local stubLibs = {
+		ACL = { GetLocale = function() return {} end },
+	}
+	local stubAS = {
+		Libs = stubLibs,
+		Skins = stubSkins,
+		Noop = noop,
+		CheckAddOn = function() return false end,
+	}
+
+	Engine[1] = stubAS
+	Engine[2] = {}
+	Engine[3] = stubSkins
+	Engine[4] = {}
+	_G.AddOnSkinsDS = {}
+
+	local message = 'AddOnSkins requires Ace3. Please install the Ace3 addon or enable embedded libraries.'
+	if _G.DEFAULT_CHAT_FRAME and _G.DEFAULT_CHAT_FRAME.AddMessage then
+		_G.DEFAULT_CHAT_FRAME:AddMessage(message)
+	else
+		print(message)
+	end
+	return
+end
+
 local AS, _ = LibStub('AceAddon-3.0'):NewAddon('AddOnSkins', 'AceConsole-3.0', 'AceEvent-3.0', 'AceHook-3.0', 'AceTimer-3.0')
 
 AS.EmbedSystem = AS:NewModule('EmbedSystem', 'AceEvent-3.0', 'AceHook-3.0')
 AS.Skins = AS:NewModule('Skins', 'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
+AS.CheckAddOn = AS.CheckAddOn or function() return false end
+AS.CheckOption = AS.CheckOption or function() return false end
 
 _G.AddOnSkins, Engine[1], Engine[2], Engine[3], Engine[4], _G.AddOnSkinsDS = Engine, AS, {}, AS.Skins, {}, {}
 

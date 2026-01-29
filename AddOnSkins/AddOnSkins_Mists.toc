@@ -3,7 +3,7 @@
 ## Version: 4.74
 ## Author: Azilroka, Nihilistzsche
 ## SavedVariables: AddOnSkinsDB, AddOnSkinsDS
-## OptionalDeps: AllTheThings, ElvUI
+## OptionalDeps: Ace3, AllTheThings, ElvUI
 ## X-Curse-Project-ID: 54541
 ## X-Wago-ID: RXKqy5Ky
 
