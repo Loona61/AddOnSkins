@@ -12,8 +12,21 @@ local NumberToEmbed
 
 ES.DetailsInstances = {}
 
+local function GetDetailsBaseFrame(window)
+	if not window then
+		return nil
+	end
+
+	return window.baseframe or window.base_frame or window.frame
+end
+
 function ES:DetailsWindow(window, width, height, point, relativeFrame, relativePoint, ofsx, ofsy)
 	if not window then return end
+
+	local baseframe = GetDetailsBaseFrame(window)
+	if not baseframe then
+		return
+	end
 
 	if (not window:IsEnabled()) then
 		window:EnableInstance()
@@ -29,10 +42,10 @@ function ES:DetailsWindow(window, width, height, point, relativeFrame, relativeP
 
 	window:UngroupInstance()
 
-	window.baseframe:ClearAllPoints()
-	window.baseframe:SetParent(relativeFrame)
-	window.baseframe:SetFrameStrata(relativeFrame:GetFrameStrata())
-	window.baseframe:SetFrameLevel(relativeFrame:GetFrameLevel())
+	baseframe:ClearAllPoints()
+	baseframe:SetParent(relativeFrame)
+	baseframe:SetFrameStrata(relativeFrame:GetFrameStrata())
+	baseframe:SetFrameLevel(relativeFrame:GetFrameLevel())
 
 	ofsx = ofsx - 1
 
@@ -71,7 +84,7 @@ function ES:DetailsWindow(window, width, height, point, relativeFrame, relativeP
 		window:SetSize(width, height - 20)
 	end
 
-	window.baseframe:SetPoint(point, relativeFrame, relativePoint, ofsx, ofsy)
+	baseframe:SetPoint(point, relativeFrame, relativePoint, ofsx, ofsy)
 	window:SaveMainWindowPosition()
 	window:RestoreMainWindowPosition()
 
@@ -81,54 +94,62 @@ function ES:DetailsWindow(window, width, height, point, relativeFrame, relativeP
 		window:MakeInstanceGroup({1})
 	end
 
-	if (window:GetId() == 1) then
-		--bookmark frame
-		_G.Details_SwitchButtonFrame1:SetParent(_G.DetailsBaseFrame1)
-		_G.Details_SwitchButtonFrame1:SetFrameLevel(_G.DetailsBaseFrame1:GetFrameLevel() + 3)
-		--row frame
-		_G.DetailsRowFrame1:SetParent(_G.DetailsBaseFrame1)
-		_G.DetailsRowFrame1:SetFrameLevel(_G.DetailsBaseFrame1:GetFrameLevel() + 2)
+	local windowId = window:GetId()
+	if windowId == 1 or windowId == 2 then
+		local switchFrame = _G["Details_SwitchButtonFrame"..windowId]
+		if switchFrame then
+			switchFrame:SetParent(baseframe)
+			switchFrame:SetFrameLevel(baseframe:GetFrameLevel() + 3)
+		end
 
-	elseif (window:GetId() == 2) then
-		--bookmark frame
-		_G.Details_SwitchButtonFrame2:SetParent(_G.DetailsBaseFrame2)
-		_G.Details_SwitchButtonFrame2:SetFrameLevel(_G.DetailsBaseFrame2:GetFrameLevel() + 3)
-		--row frame
-		_G.DetailsRowFrame2:SetParent(_G.DetailsBaseFrame2)
-		_G.DetailsRowFrame2:SetFrameLevel(_G.DetailsBaseFrame2:GetFrameLevel() + 2)
+		local rowFrame = _G["DetailsRowFrame"..windowId]
+		if rowFrame then
+			rowFrame:SetParent(baseframe)
+			rowFrame:SetFrameLevel(baseframe:GetFrameLevel() + 2)
+		end
 	end
 end
 
 function ES:Details()
 	if not Details then
 		Details = _G._detalhes
+	end
 
-		if Details.CreateEventListener then
-			local listener = Details:CreateEventListener()
-			listener:RegisterEvent("DETAILS_INSTANCE_OPEN")
-			listener:RegisterEvent("DETAILS_INSTANCE_CLOSE")
+	if not Details then
+		return
+	end
 
-			function listener:OnDetailsEvent (event, ...)
-				if (event == "DETAILS_INSTANCE_CLOSE") then
-					local instance = select (1, ...)
-					if (instance._ElvUIEmbed and _G.DetailsOptionsWindow and _G.DetailsOptionsWindow:IsShown()) then
-						Details:Msg("You just closed a window Embed on ElvUI, if wasn't intended click on Reopen.") --> need localization
-					end
-				elseif (event == "DETAILS_INSTANCE_OPEN") then
-					local instance = select(1, ...)
-					if (instance._ElvUIEmbed) then
-						if (#ES.DetailsInstances >= 2) then
-							ES.DetailsInstances[1]:UngroupInstance()
-							ES.DetailsInstances[2]:UngroupInstance()
+	if Details.CreateEventListener then
+		local listener = Details:CreateEventListener()
+		listener:RegisterEvent("DETAILS_INSTANCE_OPEN")
+		listener:RegisterEvent("DETAILS_INSTANCE_CLOSE")
 
-							ES.DetailsInstances[1].baseframe:ClearAllPoints()
-							ES.DetailsInstances[2].baseframe:ClearAllPoints()
+		function listener:OnDetailsEvent(event, ...)
+			if (event == "DETAILS_INSTANCE_CLOSE") then
+				local instance = select(1, ...)
+				if (instance and instance._ElvUIEmbed and _G.DetailsOptionsWindow and _G.DetailsOptionsWindow:IsShown()) then
+					Details:Msg("You just closed a window Embed on ElvUI, if wasn't intended click on Reopen.") --> need localization
+				end
+			elseif (event == "DETAILS_INSTANCE_OPEN") then
+				local instance = select(1, ...)
+				if (instance and instance._ElvUIEmbed) then
+					if (#ES.DetailsInstances >= 2) then
+						ES.DetailsInstances[1]:UngroupInstance()
+						ES.DetailsInstances[2]:UngroupInstance()
 
-							ES.DetailsInstances[1]:RestoreMainWindowPosition()
-							ES.DetailsInstances[2]:RestoreMainWindowPosition()
-
-							ES.DetailsInstances[2]:MakeInstanceGroup({1})
+						local baseframe1 = GetDetailsBaseFrame(ES.DetailsInstances[1])
+						local baseframe2 = GetDetailsBaseFrame(ES.DetailsInstances[2])
+						if baseframe1 then
+							baseframe1:ClearAllPoints()
 						end
+						if baseframe2 then
+							baseframe2:ClearAllPoints()
+						end
+
+						ES.DetailsInstances[1]:RestoreMainWindowPosition()
+						ES.DetailsInstances[2]:RestoreMainWindowPosition()
+
+						ES.DetailsInstances[2]:MakeInstanceGroup({1})
 					end
 				end
 			end
@@ -137,8 +158,10 @@ function ES:Details()
 
 	wipe(ES.DetailsInstances)
 
-	for _, instance in Details:ListInstances() do
-		tinsert(ES.DetailsInstances, instance)
+	if Details.ListInstances then
+		for _, instance in Details:ListInstances() do
+			tinsert(ES.DetailsInstances, instance)
+		end
 	end
 
 	NumberToEmbed = 0
@@ -149,13 +172,19 @@ function ES:Details()
 		if AS:CheckOption('EmbedLeft') == 'Details' then NumberToEmbed = NumberToEmbed + 1 end
 	end
 
-	if (Details:GetMaxInstancesAmount() < NumberToEmbed) then
-		Details:SetMaxInstancesAmount(NumberToEmbed)
+	if Details.GetMaxInstancesAmount and Details.SetMaxInstancesAmount then
+		if (Details:GetMaxInstancesAmount() < NumberToEmbed) then
+			Details:SetMaxInstancesAmount(NumberToEmbed)
+		end
 	end
 
-	local instances_amount = Details:GetNumInstancesAmount()
+	local instances_amount = Details.GetNumInstancesAmount and Details:GetNumInstancesAmount() or 0
 
 	for i = instances_amount + 1, NumberToEmbed do
+		if not Details.CreateInstance then
+			break
+		end
+
 		local new_instance = Details:CreateInstance(i)
 
 		if (type(new_instance) == "table") then
