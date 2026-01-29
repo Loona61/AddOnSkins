@@ -10,6 +10,13 @@ _G.AddOnSkins = Engine
 
 local LibStub = _G.LibStub
 if not LibStub or not LibStub('AceAddon-3.0', true) then
+	if C_AddOns and C_AddOns.LoadAddOn then
+		C_AddOns.LoadAddOn('ElvUI_Libraries')
+		LibStub = _G.LibStub
+	end
+end
+
+if not LibStub or not LibStub('AceAddon-3.0', true) then
 	local noop = function() end
 	local stubSkins = setmetatable({}, { __index = function() return noop end })
 	local stubLibs = {
@@ -28,7 +35,7 @@ if not LibStub or not LibStub('AceAddon-3.0', true) then
 	Engine[4] = {}
 	_G.AddOnSkinsDS = {}
 
-	local message = 'AddOnSkins requires Ace3. Please install the Ace3 addon or enable embedded libraries.'
+	local message = 'AddOnSkins requires Ace3. Please install the Ace3 addon or enable ElvUI_Libraries.'
 	if _G.DEFAULT_CHAT_FRAME and _G.DEFAULT_CHAT_FRAME.AddMessage then
 		_G.DEFAULT_CHAT_FRAME:AddMessage(message)
 	else
