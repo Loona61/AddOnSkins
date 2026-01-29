@@ -4,4 +4,5 @@
 	<Script file='Recount.lua'/>
 	<Script file='Skada.lua'/>
 	<Script file='TinyDPS.lua'/>
+	<Script file='LootRoll.lua'/>
 </Ui>

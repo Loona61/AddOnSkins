@@ -26,7 +26,7 @@ sort(DEVELOPERS, function(a, b) return strlower(a) < strlower(b) end)
 local DEVELOPER_STRING = table.concat(DEVELOPERS, '|n')
 
 local DefaultTemplates = { Custom = L["Custom"], Default = L["Default"], Transparent = L["Transparent"] }
-local Embeds = { NONE = 'None', Details = 'Details', Omen = 'Omen', Skada = 'Skada', Recount = 'Recount', TinyDPS = 'TinyDPS' }
+local Embeds = { NONE = 'None', Details = 'Details', Omen = 'Omen', Skada = 'Skada', Recount = 'Recount', TinyDPS = 'TinyDPS', LootRoll = 'Loot Roll' }
 local BlizzardSkins = {}
 
 local BlizzardNames = {
